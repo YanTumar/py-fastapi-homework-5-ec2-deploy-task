@@ -26,8 +26,7 @@ services:
     env_file:
       - .env
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
       - pgadmin_theater_data:/var/lib/pgadmin
     networks:
@@ -61,8 +60,7 @@ services:
     container_name: alembic_migrator_theater
     command: ["/bin/bash", "/commands/run_migration.sh"]
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
       - ./src:/usr/src/fastapi
     env_file:
