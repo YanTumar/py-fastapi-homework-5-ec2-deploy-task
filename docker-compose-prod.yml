@@ -2,21 +2,21 @@ services:
   db:
     image: 'postgres:latest'
     container_name: postgres_theater
+    restart: always
     env_file:
       - .env
     ports:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - postgres_theater_data:/var/lib/postgresql/data/
+      - postgres_theater_data:/var/lib/postgresql
     networks:
       - theater_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1 || exit 1" ]
-      interval: 10s
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 20s
 
   pgadmin:
     image: dpage/pgadmin4
@@ -42,7 +42,6 @@ services:
     environment:
       - LOG_LEVEL=debug
       - PYTHONPATH=/usr/src/fastapi
-      - WATCHFILES_FORCE_POLLING=true
     ports:
       - "8000:8000"
     depends_on:
@@ -73,12 +72,9 @@ services:
   mailhog:
     image: mailhog/mailhog:latest
     container_name: mailhog_theater
-    command: [ "sh", "-c", "MailHog" ]
     ports:
       - "8025:8025"
       - "1025:1025"
-    env_file:
-      - .env
     networks:
       - theater_network
 
@@ -95,7 +91,7 @@ services:
       - minio_data:/data
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
     networks:
@@ -134,11 +130,8 @@ services:
 
 volumes:
   postgres_theater_data:
-    driver: local
   pgadmin_theater_data:
-    driver: local
   minio_data:
-    driver: local
 
 networks:
   theater_network:
